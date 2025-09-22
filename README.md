@@ -6,3 +6,5 @@
 1. jenkins_instance
 2. mongo_instance
 3. server_instance
+
+해당 repo에 커밋이 푸시되는 경우는 terraform apply가 성공했을때만 푸시되도록 조심하자
