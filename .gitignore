@@ -5,7 +5,7 @@
 # .aws aws credentials file
 **/.aws/*
 
-**/.terraform.lock.hcl
+.terraform.lock.hcl
 
 ### Terraform ###
 # Local .terraform directories
