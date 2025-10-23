@@ -18,6 +18,7 @@ resource "aws_security_group" "jenkins_sg" {
   description = "Security group for Jenkins server"
 
   ingress {
+    description = "Allow SSH access from home"
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
@@ -25,10 +26,19 @@ resource "aws_security_group" "jenkins_sg" {
   }
 
   ingress {
+    description = "Allow Jenkins web access from home"
     from_port   = 8080
     to_port     = 8080
     protocol    = "tcp"
     cidr_blocks = ["218.49.231.116/32"]
+  }
+
+  ingress {
+    description = "Allow Github webhooks to Jenkins"
+    from_port = 8080
+    to_port     = 8080
+    protocol    = "tcp"
+    cidr_blocks = ["185.199.108.0/22"]
   }
 
   egress {
