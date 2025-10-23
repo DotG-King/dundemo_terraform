@@ -58,9 +58,10 @@ resource "aws_instance" "jenkins_server" {
 
   user_data = <<-EOF
               #!/bin/bash
-              # 1. 시스템 업데이트 & Java 설치
+              # 1. 시스템 업데이트 & Java & Git 설치
               sudo dnf update -y
               sudo dnf install -y java-17-amazon-corretto-devel
+              sudo dnf install -y git
 
               # 2. EBS 준비 (attach 대기 → 포맷 → 마운트)
               # (여기서 포맷은 최초 1회만, 기존 볼륨이면 건너뜀)
