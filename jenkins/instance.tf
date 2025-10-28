@@ -51,9 +51,10 @@ resource "aws_security_group" "jenkins_sg" {
 
 resource "aws_instance" "jenkins_server" {
   ami           = data.aws_ami.amazon_linux_2023.id
-  instance_type = "t2.micro"
+  instance_type = "t3.small"
   key_name      = aws_key_pair.jenkins_key_pair.key_name
   security_groups = [aws_security_group.jenkins_sg.name]
+  iam_instance_profile = aws_iam_instance_profile.jenkins_instance_profile.name
   availability_zone = "ap-northeast-2a"
 
   user_data = <<-EOF
