@@ -35,10 +35,19 @@ resource "aws_security_group" "jenkins_sg" {
 
   ingress {
     description = "Allow Github webhooks to Jenkins"
-    from_port = 8080
+    from_port   = 8080
     to_port     = 8080
     protocol    = "tcp"
-    cidr_blocks = ["185.199.108.0/32"]
+    cidr_blocks = [
+      "192.30.252.0/22",
+      "185.199.108.0/22",
+      "140.82.112.0/20",
+      "143.55.64.0/20"
+    ]
+    ipv6_cidr_blocks = [
+      "2a0a:a440::/29",
+      "2606:50c0::/32"
+    ]
   }
 
   egress {
@@ -47,15 +56,19 @@ resource "aws_security_group" "jenkins_sg" {
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
+
+  tags = {
+    Name = "jenkins-sg"
+  }
 }
 
 resource "aws_instance" "jenkins_server" {
-  ami                   = data.aws_ami.amazon_linux_2023.id
-  instance_type         = "t3.small"
-  key_name              = aws_key_pair.jenkins_key_pair.key_name
-  security_groups       = [aws_security_group.jenkins_sg.name]
-  iam_instance_profile  = aws_iam_instance_profile.jenkins_instance_profile.name
-  availability_zone     = "ap-northeast-2a"
+  ami                  = data.aws_ami.amazon_linux_2023.id
+  instance_type        = "t3.small"
+  key_name             = aws_key_pair.jenkins_key_pair.key_name
+  security_groups      = [aws_security_group.jenkins_sg.name]
+  iam_instance_profile = aws_iam_instance_profile.jenkins_instance_profile.name
+  availability_zone    = "ap-northeast-2a"
 
   user_data = <<-EOF
               #!/bin/bash
@@ -145,8 +158,8 @@ resource "aws_instance" "jenkins_server" {
 # 젠킨스 데이터를 저장할 EBS 볼륨 생성
 resource "aws_ebs_volume" "jenkins_data" {
   availability_zone = "ap-northeast-2a"
-  size = 5
-  type = "gp3"
+  size              = 5
+  type              = "gp3"
 
   tags = {
     Name = "jenkins-data-volume"
@@ -156,7 +169,7 @@ resource "aws_ebs_volume" "jenkins_data" {
 # 생성한 EBS 볼륨을 젠킨스 서버 인스턴스에 장착
 resource "aws_volume_attachment" "jenkins_data_attachment" {
   device_name = "/dev/sdf"
-  volume_id = aws_ebs_volume.jenkins_data.id
+  volume_id   = aws_ebs_volume.jenkins_data.id
   instance_id = aws_instance.jenkins_server.id
 }
 
@@ -168,6 +181,6 @@ resource "aws_eip" "jenkins_eip" {
 }
 
 resource "aws_eip_association" "eip_assoc" {
-  instance_id = aws_instance.jenkins_server.id
+  instance_id   = aws_instance.jenkins_server.id
   allocation_id = aws_eip.jenkins_eip.id
 }
