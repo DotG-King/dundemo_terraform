@@ -7,11 +7,12 @@ resource "random_string" "bucket_suffix" {
 
 # S3 버킷 생성
 resource "aws_s3_bucket" "app_artifacts" {
-  bucket = "${var.bucket_prefix}-${terraform.workspace}-${random_string.bucket_suffix.result}"
+  bucket = "${var.back_bucket_prefix}-${terraform.workspace}-${random_string.bucket_suffix.result}"
 
   tags = {
-    Name        = "App Artifacts Bucket"
+    Name        = "dundemo_${terraform.workspace}_app_artifacts_bucket"
     Environment = terraform.workspace
+    Type        = "back"
   }
 }
 
