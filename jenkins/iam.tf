@@ -1,4 +1,8 @@
 # Jenkins EC2 인스턴스를 위한 IAM Role 생성
+data "aws_caller_identity" "current_id" {}
+
+data "aws_region" "current_region" {}
+
 resource "aws_iam_role" "jenkins_iam_role" {
   name = "jenkins-ec2-role"
   # 이 역할을 EC2 인스턴스가 맡을 수 있도록 설정
@@ -38,12 +42,61 @@ resource "aws_iam_role_policy" "jenkins_iam_policy" {
       {
         # S3 버킷에 파일을 업로드할 수 있는 권한
         Action = [
-          "s3:PutObject"
+          "s3:PutObject",
+          "s3:GetObject",
+          "s3:DeleteObject"
         ]
-        Effect   = "Allow"
+        Effect = "Allow"
         # 보안을 위해 특정 버킷 ARN으로 제한하는 것이 좋습니다.
         # 예: "arn:aws:s3:::dundemo-app-artifacts-dev-*/*"
-        Resource = "arn:aws:s3:::*/*"
+        Resource = [
+          "arn:aws:s3:::dundemo-front-bkt-dev-*/*",
+          "arn:aws:s3:::dundemo-front-bkt-prod-*/*",
+          "arn:aws:s3:::dundemo-app-artifacts-*/*"
+        ]
+      },
+      {
+        Action = [
+          "s3:ListBucket"
+        ]
+        Effect = "Allow"
+        Resource = [
+          "arn:aws:s3:::dundemo-front-bkt-dev-*",
+          "arn:aws:s3:::dundemo-front-bkt-prod-*",
+          "arn:aws:s3:::dundemo-app-artifacts-*"
+        ]
+      },
+      {
+        Action = [
+          "ssm:PutParameter"
+        ]
+        Effect   = "Allow"
+        Resource = "arn:aws:ssm:${data.aws_region.current_region.id}:${data.aws_caller_identity.current_id.account_id}:parameter/app/*/version_number"
+      },
+      {
+        Action = [
+          "autoscaling:StartInstanceRefresh"
+        ]
+        Effect   = "Allow"
+        Resource = "arn:aws:autoscaling:${data.aws_region.current_region.id}:${data.aws_caller_identity.current_id.account_id}:autoScalingGroup:*:autoScalingGroupName/dundemo_app_asg_*"
+      },
+      {
+        Action = [
+          "cloudfront:CreateInvalidation",
+          "cloudfront:ListDistributions",
+          "cloudfront:GetDistribution"
+        ]
+        Effect   = "Allow"
+        Resource = "*"
+      },
+      {
+        Action = [
+          "autoscaling:DescribeAutoScalingGroups",
+          "autoscaling:DescribeTags",
+          "autoscaling:DescribeAutoScalingInstances"
+        ]
+        Effect   = "Allow"
+        Resource = "*"
       }
     ]
   })
