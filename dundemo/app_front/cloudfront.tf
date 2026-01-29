@@ -10,6 +10,12 @@ resource "aws_acm_certificate" "front_cert" {
   domain_name       = "*.dundemo.in"
   validation_method = "DNS"
 
+  subject_alternative_names = [
+    "*.dundemo.in",
+    "*.dev.dundemo.in",
+    "*.prod.dundemo.in"
+  ]
+
   tags = {
     Name = "dundemo_${terraform.workspace}_front_cert"
   }

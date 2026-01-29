@@ -1,6 +1,6 @@
 # EC2가 이 역할을 맡을 수 있도록 허용하는 정책
 resource "aws_iam_role" "app_iam_role" {
-  name = "app-ec2-role"
+  name = "app-ec2-role-${terraform.workspace}"
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -70,6 +70,6 @@ resource "aws_iam_role_policy_attachment" "ssm_core_attachment" {
 
 # EC2 인스턴스에 연결할 인스턴스 프로파일 생성
 resource "aws_iam_instance_profile" "app_instance_profile" {
-  name = "app-instance-profile"
+  name = "app-instance-profile-${terraform.workspace}"
   role = aws_iam_role.app_iam_role.name
 }

@@ -37,9 +37,10 @@ resource "aws_route53_record" "load_balancer" {
 }
 
 resource "aws_route53_record" "lb_cert_validation" {
-  for_each = {
+  # dev에서 생성한 인증서가 prod에서는 생성되지 않도록 방지
+  for_each = terraform.workspace == "dev" ? {
     for dvo in module.vpc.lb_cert_dvo : dvo.domain_name => dvo
-  }
+  } : {}
 
   zone_id = data.aws_route53_zone.public.zone_id
   name    = each.value.resource_record_name
@@ -49,6 +50,9 @@ resource "aws_route53_record" "lb_cert_validation" {
 }
 
 resource "aws_acm_certificate_validation" "lb_cert_validation" {
+  # dev에서 생성한 인증서가 prod에서는 생성되지 않도록 방지
+  count = terraform.workspace == "dev" ? 1 : 0
+
   provider = aws
   certificate_arn = module.vpc.lb_cert_arn
   validation_record_fqdns = [
@@ -70,9 +74,14 @@ resource "aws_route53_record" "front_dns" {
 }
 
 resource "aws_route53_record" "front_cert_validation" {
-  for_each = {
+  # dev에서 생성한 인증서가 prod에서는 생성되지 않도록 방지
+  for_each = terraform.workspace == "dev" ?{
     for dvo in module.app_front.front_cert_dvo : dvo.domain_name => dvo
-  }
+  } : {}
+
+  # for_each = {
+  #   for dvo in module.app_front.front_cert_dvo : dvo.domain_name => dvo
+  # }
 
   zone_id = data.aws_route53_zone.public.zone_id
   name    = each.value.resource_record_name
@@ -82,6 +91,9 @@ resource "aws_route53_record" "front_cert_validation" {
 }
 
 resource "aws_acm_certificate_validation" "front_cert_validation" {
+  # dev에서 생성한 인증서가 prod에서는 생성되지 않도록 방지
+  count = terraform.workspace == "dev" ? 1 : 0
+
   provider        = aws.us_east_1
   certificate_arn = module.app_front.front_cert_arn
   validation_record_fqdns = [
